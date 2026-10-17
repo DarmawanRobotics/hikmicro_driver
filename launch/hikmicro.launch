@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- HIKMICRO HM-TD5567T bi-spectrum PTZ camera: ISAPI control -->
+<!-- HIKMICRO HM-TD5567T bi-spectrum PTZ camera: ISAPI control and both RTSP streams -->
 <launch>
   <arg name="namespace" default="hikmicro"/>
   <arg name="host" default="192.168.1.64" doc="camera IP (factory default 192.168.1.64)"/>
@@ -8,6 +8,8 @@
   <arg name="password" default=""
        doc="empty: the nodes read the HIKMICRO_PASSWORD environment variable (roslaunch prints params)"/>
   <arg name="config" default="$(find hikmicro_ptz_driver)/config/hikmicro.yaml"/>
+  <arg name="cameras" default="true" doc="publish the visible and thermal RTSP streams"/>
+  <arg name="camera_config" default="$(find hikmicro_ptz_driver)/config/camera.yaml"/>
 
   <group ns="$(arg namespace)">
     <node pkg="hikmicro_ptz_driver" type="hikmicro_ptz_node" name="hikmicro_ptz_node"
@@ -18,5 +20,26 @@
       <param name="user" type="str" value="$(arg user)"/>
       <param name="password" type="str" value="$(arg password)"/>
     </node>
+
+    <group if="$(arg cameras)">
+      <node pkg="hikmicro_ptz_driver" type="hikmicro_camera_node" name="camera" ns="visible"
+            output="screen">
+        <rosparam command="load" file="$(arg camera_config)"/>
+        <param name="host" type="str" value="$(arg host)"/>
+        <param name="user" type="str" value="$(arg user)"/>
+        <param name="password" type="str" value="$(arg password)"/>
+        <param name="channel" type="int" value="1"/>
+        <param name="frame_id" type="str" value="hikmicro_visible_optical_frame"/>
+      </node>
+      <node pkg="hikmicro_ptz_driver" type="hikmicro_camera_node" name="camera" ns="thermal"
+            output="screen">
+        <rosparam command="load" file="$(arg camera_config)"/>
+        <param name="host" type="str" value="$(arg host)"/>
+        <param name="user" type="str" value="$(arg user)"/>
+        <param name="password" type="str" value="$(arg password)"/>
+        <param name="channel" type="int" value="2"/>
+        <param name="frame_id" type="str" value="hikmicro_thermal_optical_frame"/>
+      </node>
+    </group>
   </group>
 </launch>

@@ -1,0 +1,16 @@
+# hikmicro_camera_node parameters, shared by the visible and the thermal stream.
+# host / user / password / channel / frame_id come from the launch file; with an empty
+# password the node reads the HIKMICRO_PASSWORD environment variable.
+password_env: HIKMICRO_PASSWORD
+rtsp_port: 554
+stream: 1                 # 1 main stream, 2 sub stream
+codec: auto               # auto (decodebin) | h264 | h265; set it for decoder: jetson
+decoder: auto             # auto: jetson (needs codec) -> software -> ffmpeg
+latency_ms: 0             # rtspsrc jitter buffer
+protocols: tcp            # tcp | udp
+reconnect_sec: 1.0        # first retry, doubles up to 30 s
+timeout_ms: 5000          # dead stream detection
+encoding: bgr8            # bgr8 | mono8
+max_fps: 0.0              # 0: as received
+width: 0                  # 0: as received
+height: 0
