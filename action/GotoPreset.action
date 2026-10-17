@@ -1,0 +1,19 @@
+# Call a preset and finish when the camera has arrived: at the preset's listed position, or,
+# when the camera does not list positions, once the PTZ has moved and stopped again.
+int32 id
+float64 tolerance    # deg; <= 0 uses the parameters
+float64 timeout      # s; <= 0 uses move_timeout
+---
+bool reached
+string state         # reached, stalled, timeout, preempted, superseded, error
+float64 pan
+float64 tilt
+float64 zoom
+string message
+---
+float64 pan
+float64 tilt
+float64 zoom
+float64 pan_error
+float64 tilt_error
+float64 zoom_error

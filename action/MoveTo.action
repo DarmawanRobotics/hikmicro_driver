@@ -1,0 +1,23 @@
+# Move to an absolute PTZ position and finish when the camera reports it has arrived:
+# within tolerance and no longer moving for settle_time. Aborted if the PTZ stops short
+# (stall_time) or the timeout passes.
+float64 pan          # deg, azimuth 0..360 (wraps)
+float64 tilt         # deg, elevation (device sign)
+float64 zoom         # x; <= 0 keeps the current zoom
+float64 speed        # > 0: horizontal/vertical speed in device units (absoluteEx only)
+float64 tolerance    # deg for pan and tilt; <= 0 uses the pan/tilt_tolerance parameters
+float64 timeout      # s; <= 0 uses move_timeout
+---
+bool reached
+string state         # reached, stalled, timeout, preempted, superseded, error
+float64 pan
+float64 tilt
+float64 zoom
+string message
+---
+float64 pan
+float64 tilt
+float64 zoom
+float64 pan_error
+float64 tilt_error
+float64 zoom_error
