@@ -16,7 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
+  cv_bridge
+  image_transport
 )
+find_package(OpenCV REQUIRED COMPONENTS core imgproc videoio)
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -45,9 +48,9 @@ generate_messages(DEPENDENCIES std_msgs sensor_msgs actionlib_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hikmicro_isapi
+  LIBRARIES hikmicro_isapi hikmicro_rtsp
   CATKIN_DEPENDS roscpp std_msgs std_srvs sensor_msgs geometry_msgs actionlib actionlib_msgs
-    message_runtime
+    message_runtime cv_bridge image_transport
   DEPENDS CURL
 )
 
@@ -74,12 +77,22 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 target_link_libraries(hikmicro_ptz_node hikmicro_isapi ${catkin_LIBRARIES})
 add_dependencies(hikmicro_ptz_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS hikmicro_ptz_node
+# RTSP capture (OpenCV, no ROS) and the camera node: one per stream, visible / thermal
+add_library(hikmicro_rtsp src/rtsp_capture.cpp)
+target_include_directories(hikmicro_rtsp PUBLIC include)
+target_include_directories(hikmicro_rtsp SYSTEM PUBLIC ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(hikmicro_rtsp ${OpenCV_LIBS} Threads::Threads)
+
+add_executable(hikmicro_camera_node src/camera_node.cpp)
+target_link_libraries(hikmicro_camera_node hikmicro_rtsp hikmicro_isapi ${catkin_LIBRARIES})
+add_dependencies(hikmicro_camera_node ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS hikmicro_ptz_node hikmicro_camera_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 install(DIRECTORY launch config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-install(TARGETS hikmicro_isapi
+install(TARGETS hikmicro_isapi hikmicro_rtsp
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
@@ -98,4 +111,6 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(test_camera_fake hikmicro_isapi)
   target_compile_definitions(test_camera_fake PRIVATE
     FAKE_CAMERA_PY="${CMAKE_CURRENT_SOURCE_DIR}/test/fake_camera.py")
+  catkin_add_gtest(test_rtsp test/test_rtsp.cpp test/main.cpp TIMEOUT 60)
+  target_link_libraries(test_rtsp hikmicro_rtsp)
 endif()
