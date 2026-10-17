@@ -1,0 +1,7 @@
+# set_preset: save the current position as preset `id` (name optional).
+# remove_preset: delete preset `id` (name ignored).
+int32 id
+string name
+---
+bool success
+string message
