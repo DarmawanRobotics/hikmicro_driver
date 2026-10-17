@@ -7,16 +7,41 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra)
 endif()
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  std_srvs
+  sensor_msgs
+  geometry_msgs
+  actionlib
+  actionlib_msgs
+  message_generation
+)
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(TINYXML2 REQUIRED tinyxml2)
 find_package(nlohmann_json 3 REQUIRED)
 
+add_message_files(FILES
+  PtzPreset.msg
+  PtzState.msg
+)
+add_service_files(FILES
+  GetPresets.srv
+  SetPreset.srv
+)
+add_action_files(FILES
+  GotoPreset.action
+  MoveTo.action
+)
+generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES hikmicro_isapi
+  CATKIN_DEPENDS roscpp std_msgs std_srvs sensor_msgs geometry_msgs actionlib actionlib_msgs
+    message_runtime
   DEPENDS CURL
 )
 
@@ -31,6 +56,20 @@ target_include_directories(hikmicro_isapi PUBLIC include ${CURL_INCLUDE_DIRS})
 target_include_directories(hikmicro_isapi SYSTEM PRIVATE ${TINYXML2_INCLUDE_DIRS})
 target_link_libraries(hikmicro_isapi
   ${CURL_LIBRARIES} ${TINYXML2_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
+
+# The node: PTZ (actions, presets, cmd_vel)
+add_executable(hikmicro_ptz_node
+  src/hikmicro_node.cpp
+  src/ptz_interface.cpp
+)
+include_directories(include ${catkin_INCLUDE_DIRS})
+target_link_libraries(hikmicro_ptz_node hikmicro_isapi ${catkin_LIBRARIES})
+add_dependencies(hikmicro_ptz_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS hikmicro_ptz_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(DIRECTORY launch config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(TARGETS hikmicro_isapi
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
