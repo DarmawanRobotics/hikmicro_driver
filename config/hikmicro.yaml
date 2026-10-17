@@ -37,3 +37,10 @@ invert_zoom: false
 # PTZ auxiliaries: 0 = take the ids the camera lists
 light_aux_id: 0
 wiper_aux_id: 0
+
+# Pixel-to-pixel thermometry (jpegPicWithAppendData): thermal/temperature (32FC1, deg C) and
+# thermal/stats. A frame is ~1.5 MB at 640x512, so keep the rate low.
+radiometric_rate: 1.0       # Hz; 0 = only on thermal/get_temperature
+radiometric_max_age: 2.0    # s, get_temperature reuses a frame this fresh
+visible_frame_id: hikmicro_visible_optical_frame
+thermal_frame_id: hikmicro_thermal_optical_frame
