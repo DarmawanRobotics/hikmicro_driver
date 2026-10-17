@@ -40,14 +40,14 @@ install(TARGETS hikmicro_isapi
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(test_isapi_xml test/test_isapi_xml.cpp)
+  catkin_add_gtest(test_isapi_xml test/test_isapi_xml.cpp test/main.cpp)
   target_link_libraries(test_isapi_xml hikmicro_isapi)
-  catkin_add_gtest(test_radiometric test/test_radiometric.cpp)
+  catkin_add_gtest(test_radiometric test/test_radiometric.cpp test/main.cpp)
   target_link_libraries(test_radiometric hikmicro_isapi)
-  catkin_add_gtest(test_motion test/test_motion.cpp)
+  catkin_add_gtest(test_motion test/test_motion.cpp test/main.cpp)
   target_link_libraries(test_motion hikmicro_isapi)
   # end to end against test/fake_camera.py (HTTP, digest, simulated PTZ)
-  catkin_add_gtest(test_camera_fake test/test_camera_fake.cpp TIMEOUT 120)
+  catkin_add_gtest(test_camera_fake test/test_camera_fake.cpp test/main.cpp TIMEOUT 120)
   target_link_libraries(test_camera_fake hikmicro_isapi)
   target_compile_definitions(test_camera_fake PRIVATE
     FAKE_CAMERA_PY="${CMAKE_CURRENT_SOURCE_DIR}/test/fake_camera.py")
