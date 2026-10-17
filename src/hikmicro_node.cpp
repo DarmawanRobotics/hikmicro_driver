@@ -8,8 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "hikmicro_ptz_driver/aux_interface.hpp"
 #include "hikmicro_ptz_driver/camera.hpp"
 #include "hikmicro_ptz_driver/ptz_interface.hpp"
+#include "hikmicro_ptz_driver/thermal_interface.hpp"
 
 using namespace hikmicro_ptz_driver;
 
@@ -69,10 +71,12 @@ int main(int argc, char ** argv)
     ROS_INFO("camera: %s, serial %s, firmware %s %s", info->model.c_str(), info->serial.c_str(),
       info->firmware.c_str(), info->firmware_date.c_str());
   } else {
-    ROS_WARN("deviceInfo: %s (retrying in the background)", err.c_str());
+    ROS_WARN("deviceInfo: %s (ptz/state shows when the camera answers)", err.c_str());
   }
 
   PtzInterface ptz(nh, pnh, cam);
+  AuxInterface aux(nh, pnh, cam);
+  ThermalInterface thermal(nh, pnh, cam);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();

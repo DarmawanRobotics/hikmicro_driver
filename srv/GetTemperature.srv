@@ -1,0 +1,16 @@
+# Temperature at a point, in a box or over the whole frame, computed from a pixel-to-pixel
+# thermometry frame no older than max_age (a fresh frame is taken otherwise).
+uint8 POINT = 0
+uint8 REGION = 1
+uint8 FRAME = 2
+uint8 mode
+bool normalized    # x, y, x2, y2 in 0..1 of the frame instead of pixels
+float32 x          # POINT: the point; REGION: one corner
+float32 y
+float32 x2         # REGION: the opposite corner
+float32 y2
+float32 max_age    # s; <= 0 uses the radiometric_max_age parameter
+---
+bool success
+string message
+ThermalStats stats

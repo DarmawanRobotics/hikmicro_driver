@@ -1,0 +1,6 @@
+# Switch a PTZ auxiliary on or off.
+string type        # LIGHT, WIPER, FAN or HEATER (as the camera lists them)
+bool enabled       # on / off (a field named "on" would be read as a boolean by YAML)
+---
+bool success
+string message

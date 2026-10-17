@@ -26,16 +26,22 @@ find_package(nlohmann_json 3 REQUIRED)
 add_message_files(FILES
   PtzPreset.msg
   PtzState.msg
+  ThermalStats.msg
 )
 add_service_files(FILES
   GetPresets.srv
+  GetTemperature.srv
+  RawRequest.srv
+  SetAux.srv
+  SetDayNight.srv
   SetPreset.srv
+  Snapshot.srv
 )
 add_action_files(FILES
   GotoPreset.action
   MoveTo.action
 )
-generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
+generate_messages(DEPENDENCIES std_msgs sensor_msgs actionlib_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -57,10 +63,12 @@ target_include_directories(hikmicro_isapi SYSTEM PRIVATE ${TINYXML2_INCLUDE_DIRS
 target_link_libraries(hikmicro_isapi
   ${CURL_LIBRARIES} ${TINYXML2_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
 
-# The node: PTZ (actions, presets, cmd_vel)
+# The node: PTZ (actions, presets, cmd_vel), auxiliaries, day/night, snapshots, thermometry
 add_executable(hikmicro_ptz_node
   src/hikmicro_node.cpp
   src/ptz_interface.cpp
+  src/aux_interface.cpp
+  src/thermal_interface.cpp
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
 target_link_libraries(hikmicro_ptz_node hikmicro_isapi ${catkin_LIBRARIES})
