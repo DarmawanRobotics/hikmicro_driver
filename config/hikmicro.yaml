@@ -1,0 +1,38 @@
+# hikmicro_ptz_node parameters. host / port / user / password come from the launch file
+# (password defaults to the HIKMICRO_PASSWORD environment variable).
+
+# ISAPI
+https: false
+ptz_channel: 1              # PTZ control
+visible_channel: 1          # RGB: RTSP 101, snapshots, day/night
+thermal_channel: 2          # thermal: RTSP 201, thermometry
+timeout: 3.0                # s, control requests
+image_timeout: 10.0         # s, snapshots and radiometric frames
+
+# PTZ state
+state_rate: 10.0            # Hz, position polling (also the arrival check rate)
+frame_id: hikmicro_ptz
+publish_joint_states: true  # sensor_msgs/JointState for robot_state_publisher
+pan_joint: hikmicro_pan_joint
+tilt_joint: hikmicro_tilt_joint
+pan_sign: 1.0               # joint = sign * device angle (rad); set -1 to match your URDF
+tilt_sign: 1.0
+
+# move_to / goto_preset: "arrived" = within tolerance and still for settle_time
+pan_tolerance: 0.2          # deg
+tilt_tolerance: 0.2         # deg
+zoom_tolerance: 0.1         # x
+settle_time: 0.3            # s
+stall_time: 2.0             # s still but out of tolerance: aborted as "stalled"
+move_timeout: 30.0          # s
+
+# ptz/cmd_vel (geometry_msgs/Twist): angular.z pan, angular.y tilt, linear.z zoom, -1..1
+max_speed: 60               # device speed at full deflection, 1..100
+cmd_vel_timeout: 0.5        # s without cmd_vel while moving: stop
+invert_pan: false
+invert_tilt: false
+invert_zoom: false
+
+# PTZ auxiliaries: 0 = take the ids the camera lists
+light_aux_id: 0
+wiper_aux_id: 0

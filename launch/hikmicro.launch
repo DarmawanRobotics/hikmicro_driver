@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- HIKMICRO HM-TD5567T bi-spectrum PTZ camera: ISAPI control -->
+<launch>
+  <arg name="namespace" default="hikmicro"/>
+  <arg name="host" default="192.168.1.64" doc="camera IP (factory default 192.168.1.64)"/>
+  <arg name="port" default="80" doc="ISAPI HTTP port"/>
+  <arg name="user" default="admin"/>
+  <arg name="password" default="$(optenv HIKMICRO_PASSWORD)"
+       doc="defaults to the HIKMICRO_PASSWORD environment variable"/>
+  <arg name="config" default="$(find hikmicro_ptz_driver)/config/hikmicro.yaml"/>
+
+  <group ns="$(arg namespace)">
+    <node pkg="hikmicro_ptz_driver" type="hikmicro_ptz_node" name="hikmicro_ptz_node"
+          output="screen">
+      <rosparam command="load" file="$(arg config)"/>
+      <param name="host" type="str" value="$(arg host)"/>
+      <param name="port" type="int" value="$(arg port)"/>
+      <param name="user" type="str" value="$(arg user)"/>
+      <param name="password" type="str" value="$(arg password)"/>
+    </node>
+  </group>
+</launch>
