@@ -1,0 +1,11 @@
+# Any ISAPI request, for what the driver does not wrap. Text answers are returned as they are;
+# binary answers are reported by size only.
+string method        # GET, PUT, POST or DELETE
+string path          # /ISAPI/...
+string body
+string content_type  # empty: XML, or JSON when the body starts with '{'
+---
+int32 status         # HTTP status, 0 if the camera did not answer
+string content_type
+string body
+string message

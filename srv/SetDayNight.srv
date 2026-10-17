@@ -1,0 +1,7 @@
+# Day/night (IR-cut) mode of the visible camera. At night the filter opens and the IR light is
+# used. Empty mode only reads the current one.
+string mode        # auto, day, night (schedule, ... where the camera allows)
+---
+bool success
+string mode        # the mode the camera reports now
+string message
