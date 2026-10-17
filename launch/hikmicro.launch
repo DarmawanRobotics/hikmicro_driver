@@ -5,8 +5,8 @@
   <arg name="host" default="192.168.1.64" doc="camera IP (factory default 192.168.1.64)"/>
   <arg name="port" default="80" doc="ISAPI HTTP port"/>
   <arg name="user" default="admin"/>
-  <arg name="password" default="$(optenv HIKMICRO_PASSWORD)"
-       doc="defaults to the HIKMICRO_PASSWORD environment variable"/>
+  <arg name="password" default=""
+       doc="empty: the nodes read the HIKMICRO_PASSWORD environment variable (roslaunch prints params)"/>
   <arg name="config" default="$(find hikmicro_ptz_driver)/config/hikmicro.yaml"/>
 
   <group ns="$(arg namespace)">

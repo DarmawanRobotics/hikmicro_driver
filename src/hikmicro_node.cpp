@@ -3,6 +3,7 @@
 // radiometric frame) never blocks a stop.
 #include <ros/ros.h>
 
+#include <cstdlib>
 #include <map>
 #include <memory>
 #include <string>
@@ -22,7 +23,15 @@ CameraConfig loadConfig(ros::NodeHandle & pnh)
   pnh.param("port", c.port, 80);
   pnh.param("https", c.https, false);
   pnh.param<std::string>("user", c.user, "admin");
+  // The password param is printed by roslaunch; prefer the environment variable.
   pnh.param<std::string>("password", c.password, "");
+  if (c.password.empty()) {
+    std::string env_name;
+    pnh.param<std::string>("password_env", env_name, "HIKMICRO_PASSWORD");
+    if (const char * env = std::getenv(env_name.c_str())) {
+      c.password = env;
+    }
+  }
   pnh.param("ptz_channel", c.ptz_channel, 1);
   pnh.param("visible_channel", c.visible_channel, 1);
   pnh.param("thermal_channel", c.thermal_channel, 2);
@@ -50,7 +59,7 @@ int main(int argc, char ** argv)
 
   const CameraConfig cfg = loadConfig(pnh);
   if (cfg.password.empty()) {
-    ROS_WARN("~password is empty: the camera will answer 401");
+    ROS_WARN("no password (~password or $HIKMICRO_PASSWORD): the camera will answer 401");
   }
   auto cam = std::make_shared<HikCamera>(cfg);
   ROS_INFO("ISAPI on %s://%s:%d as %s", cfg.https ? "https" : "http", cfg.host.c_str(), cfg.port,

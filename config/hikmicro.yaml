@@ -1,5 +1,6 @@
-# hikmicro_ptz_node parameters. host / port / user / password come from the launch file
-# (password defaults to the HIKMICRO_PASSWORD environment variable).
+# hikmicro_ptz_node parameters. host / port / user / password come from the launch file;
+# with an empty password the node reads the HIKMICRO_PASSWORD environment variable.
+password_env: HIKMICRO_PASSWORD
 
 # ISAPI
 https: false
