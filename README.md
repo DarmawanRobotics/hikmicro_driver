@@ -1,6 +1,6 @@
 <div align="center">
 
-# hikmicro_ptz_driver
+# hikmicro_driver
 
 **ROS Noetic driver for the HIKMICRO HM-TD5567T bi-spectrum (thermal + visible) PTZ camera
 over ISAPI: precise pan/tilt/zoom that tells you when it has arrived, presets, light and wiper,
@@ -22,6 +22,10 @@ Deep Robotics X30.**
 </div>
 
 ---
+
+**Docs:** [ISAPI summary](docs/isapi.md) · [network setup](docs/network.md) ·
+[first run on the camera](docs/first_run.md) · [troubleshooting](docs/troubleshooting.md) ·
+[messages](hikmicro_msgs/README.md)
 
 Everything goes over the LAN cable: the camera is controlled with **ISAPI** (HTTP with digest
 authentication, *ISAPI Thermography thermal cameras PT series*, which lists the HM-TD5567T-7/15/25
@@ -61,11 +65,11 @@ All names under the launch namespace (`/hikmicro` by default).
 
 | Topic | Type | |
 |---|---|---|
-| `ptz/state` | `hikmicro_ptz_driver/PtzState` | connected, pan, tilt, zoom, moving (`state_rate`, 10 Hz) |
+| `ptz/state` | `hikmicro_msgs/PtzState` | connected, pan, tilt, zoom, moving (`state_rate`, 10 Hz) |
 | `joint_states` | `sensor_msgs/JointState` | pan / tilt joints for `robot_state_publisher` |
 | `ptz/cmd_vel` (in) | `geometry_msgs/Twist` | manual: `angular.z` pan, `angular.y` tilt, `linear.z` zoom, −1..1; stops 0.5 s after the last message |
 | `thermal/temperature` | `sensor_msgs/Image` | **32FC1, °C per pixel** (pixel-to-pixel thermometry, `radiometric_rate`) |
-| `thermal/stats` | `hikmicro_ptz_driver/ThermalStats` | full-frame max / min / mean and where |
+| `thermal/stats` | `hikmicro_msgs/ThermalStats` | full-frame max / min / mean and where |
 | `visible/image_raw` | `sensor_msgs/Image` | RGB stream (channel 1) |
 | `thermal/image_raw` | `sensor_msgs/Image` | thermal video (channel 2, palette as set on the camera) |
 | `*/image_raw/compressed` | `sensor_msgs/CompressedImage` | via image_transport |
@@ -136,7 +140,7 @@ catkin_make && source devel/setup.bash      # or: catkin build
 
 # 3. Launch (the password comes from the environment, so roslaunch never prints it)
 export HIKMICRO_PASSWORD='<camera password>'
-roslaunch hikmicro_ptz_driver hikmicro.launch host:=192.168.1.64
+roslaunch hikmicro_driver hikmicro.launch host:=192.168.1.64
 #   cameras:=false for control only
 
 # 4. Second terminal
@@ -150,7 +154,7 @@ rosrun rqt_image_view rqt_image_view /hikmicro/visible/image_raw
 
 ```bash
 rosrun actionlib_tools axclient.py /hikmicro/ptz/move_to      # GUI
-rostopic pub -1 /hikmicro/ptz/move_to/goal hikmicro_ptz_driver/MoveToActionGoal \
+rostopic pub -1 /hikmicro/ptz/move_to/goal hikmicro_msgs/MoveToActionGoal \
   "{goal: {pan: 123.4, tilt: -12.5, zoom: 8.0}}"
 rostopic echo -n 1 /hikmicro/ptz/move_to/result                 # state: "reached"
 ```
@@ -160,7 +164,7 @@ rostopic echo -n 1 /hikmicro/ptz/move_to/result                 # state: "reache
 ```bash
 rosservice call /hikmicro/ptz/set_preset "{id: 3, name: 'trafo 1 bushing'}"
 rosservice call /hikmicro/ptz/get_presets
-rostopic pub -1 /hikmicro/ptz/goto_preset/goal hikmicro_ptz_driver/GotoPresetActionGoal \
+rostopic pub -1 /hikmicro/ptz/goto_preset/goal hikmicro_msgs/GotoPresetActionGoal \
   "{goal: {id: 3}}"
 ```
 
@@ -202,8 +206,8 @@ rosservice call /hikmicro/isapi/request "{method: GET, path: /ISAPI/PTZCtrl/chan
 #!/usr/bin/env python3
 import actionlib
 import rospy
-from hikmicro_ptz_driver.msg import MoveToAction, MoveToGoal
-from hikmicro_ptz_driver.srv import GetTemperature, Snapshot
+from hikmicro_msgs.msg import MoveToAction, MoveToGoal
+from hikmicro_msgs.srv import GetTemperature, Snapshot
 from std_srvs.srv import Trigger
 
 POINTS = [  # name, pan, tilt, zoom, box in the thermal image (x1, y1, x2, y2)
@@ -233,7 +237,7 @@ for name, pan, tilt, zoom, (x1, y1, x2, y2) in POINTS:
 
 ## Parameters
 
-[config/hikmicro.yaml](config/hikmicro.yaml) and [config/camera.yaml](config/camera.yaml), every
+[hikmicro.yaml](hikmicro_driver/config/hikmicro.yaml) and [camera.yaml](hikmicro_driver/config/camera.yaml), every
 one commented.
 
 **`hikmicro_ptz_node`**
@@ -287,32 +291,34 @@ one commented.
 
 ```bash
 catkin_make run_tests && catkin_test_results build/test_results --verbose
-bash src/hikmicro_ptz_driver/test/smoke_test.sh     # with the workspace sourced
+bash src/hikmicro_ptz_driver/hikmicro_driver/test/smoke_test.sh     # with the workspace sourced
 ```
 
 - `test_isapi_xml`: builders and parsers against the document's example messages
 - `test_radiometric`: multipart parsing, float32 and 16-bit Kelvin matrices, region statistics
 - `test_motion`: arrival detection (reached, overshoot, stall, timeout, wrap around 0°)
-- `test_camera_fake`: the ISAPI client end to end against [test/fake_camera.py](test/fake_camera.py)
+- `test_camera_fake`: the ISAPI client end to end against [fake_camera.py](hikmicro_driver/test/fake_camera.py)
   (digest auth, a PTZ that moves at finite speed, presets, aux, IR-cut, snapshots, thermometry)
 - `test_rtsp`: GStreamer pipelines, decoder order, the capture loop on a local video
 - `smoke_test.sh`: `hikmicro.launch` against the fake camera — actions, services, topics; CI runs
   all of it in a `ros:noetic` container
 
 ```
-hikmicro_ptz_driver/
-├── include/hikmicro_ptz_driver/
-│   ├── http_client.hpp       libcurl, digest auth (no ROS)
-│   ├── isapi_xml.hpp         ISAPI messages (no ROS)
-│   ├── radiometric.hpp       jpegPicWithAppendData, temperature statistics (no ROS)
-│   ├── motion.hpp            arrival detection (no ROS)
-│   ├── camera.hpp            HikCamera: the whole camera API (no ROS)
-│   ├── rtsp_capture.hpp      RTSP capture thread (OpenCV, no ROS)
-│   └── *_interface.hpp       ROS: PTZ, aux, thermal
-├── src/                      hikmicro_node.cpp, camera_node.cpp, ...
-├── msg/ srv/ action/
-├── config/ launch/
-└── test/
+hikmicro_ptz_driver/              repo
+├── hikmicro_msgs/                PtzState, PtzPreset, ThermalStats, 7 services, MoveTo, GotoPreset
+├── hikmicro_driver/
+│   ├── include/hikmicro_driver/
+│   │   ├── http_client.hpp       libcurl, digest auth (no ROS)
+│   │   ├── isapi_xml.hpp         ISAPI messages (no ROS)
+│   │   ├── radiometric.hpp       jpegPicWithAppendData, temperature statistics (no ROS)
+│   │   ├── motion.hpp            arrival detection (no ROS)
+│   │   ├── camera.hpp            HikCamera: the whole camera API (no ROS)
+│   │   ├── rtsp_capture.hpp      RTSP capture thread (OpenCV, no ROS)
+│   │   └── *_interface.hpp       ROS: PTZ, aux, thermal
+│   ├── src/                      hikmicro_node.cpp, camera_node.cpp, ...
+│   ├── config/ launch/
+│   └── test/
+└── docs/                         guides
 ```
 
-hikmicro_ptz_driver is released under the [Apache License 2.0](LICENSE).
+hikmicro_driver is released under the [Apache License 2.0](LICENSE).

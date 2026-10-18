@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: src/hikmicro_ptz_driver
+          path: src/hikmicro_driver        # holds hikmicro_msgs and hikmicro_driver
       - name: Dependencies
         run: |
           deps() {
@@ -86,7 +86,7 @@ jobs:
           source /opt/ros/noetic/setup.bash
           source devel/setup.bash
           result=0
-          bash src/hikmicro_ptz_driver/test/smoke_test.sh > smoke.txt 2>&1 || result=$?
+          bash src/hikmicro_driver/hikmicro_driver/test/smoke_test.sh > smoke.txt 2>&1 || result=$?
           cat smoke.txt
           echo "::notice title=Smoke test::$(grep -c '^ok' smoke.txt) ok, $(grep -c '^FAIL' smoke.txt) failed"
           if [ "$result" != 0 ]; then
