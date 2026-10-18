@@ -10,7 +10,7 @@
   </description>
   <maintainer email="darmawandeveloper@gmail.com">Agus Darmawan</maintainer>
   <license>Apache-2.0</license>
-  <url type="repository">https://github.com/DarmawanRobotics/hikmicro_ptz_driver</url>
+  <url type="repository">https://github.com/DarmawanRobotics/hikmicro_driver</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
